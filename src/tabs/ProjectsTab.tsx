@@ -17,9 +17,15 @@ export default function ProjectsTab(){
     <div>
       <div className="mb-4">
         <input className="w-full input" placeholder="Buscar projetos pelo nome" value={query} onChange={e=>setQuery(e.target.value)} />
-        <div className="flex gap-2 mt-2">
+        <div className="flex items-center gap-2 flex-wrap mt-2">
           {['Todos','Em dia','Em risco','Atrasado','Concluído'].map(f=> (
-            <button key={f} className={`px-3 py-1 rounded ${filter===f? 'btn-accent' : 'surface'}`} onClick={()=>setFilter(f as any)}>{f}</button>
+            <button
+              key={f}
+              onClick={()=>setFilter(f as any)}
+              style={filter===f ? {background:'var(--accentBg)',color:'var(--accent)',border:'1px solid var(--accentBorder)',padding:'8px 16px',borderRadius:8,fontSize:13,fontWeight:500} : {background:'var(--chipBg)',color:'var(--textSub)',border:'1px solid var(--border)',padding:'8px 16px',borderRadius:8,fontSize:13,fontWeight:500}}
+            >
+              {f}
+            </button>
           ))}
         </div>
       </div>

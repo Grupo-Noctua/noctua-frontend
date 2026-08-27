@@ -24,6 +24,7 @@ export default function App() {
     <div className="min-h-screen p-6">
       <Header
         onToggleTheme={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
+        theme={theme}
         onCreate={() => setCreating(true)}
         userName="Rafael Drummond · Diretor de Projetos"
       />
