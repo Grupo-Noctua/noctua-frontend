@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Header from './components/Header'
 import KPIs from './components/KPIs'
 import ProjectsTab from './tabs/ProjectsTab'
-import TeamTab from './tabs/TeamTab'
-import ToolsTab from './tabs/ToolsTab'
+import MetricsTab from './tabs/MetricsTab'
 import CreateProjectFlow from './components/CreateProjectFlow'
 
 export default function App() {
@@ -11,7 +10,7 @@ export default function App() {
     const raw = localStorage.getItem('theme')
     return (raw as 'light'|'dark') || 'light'
   })
-  const [activeTab, setActiveTab] = useState<'projetos'|'equipe'|'ferramentas'>('projetos')
+  const [activeTab, setActiveTab] = useState<'metricas'|'projetos'>('metricas')
   const [creating, setCreating] = useState(false)
 
   useEffect(() => {
@@ -35,19 +34,17 @@ export default function App() {
 
       <div className="mt-6">
         <div className="tabs-container">
+          <button className={`tab-btn ${activeTab==='metricas' ? 'active' : 'inactive'}`} onClick={() => setActiveTab('metricas')}>MÉTRICAS</button>
           <button className={`tab-btn ${activeTab==='projetos' ? 'active' : 'inactive'}`} onClick={() => setActiveTab('projetos')}>PROJETOS</button>
-          <button className={`tab-btn ${activeTab==='equipe' ? 'active' : 'inactive'}`} onClick={() => setActiveTab('equipe')}>EQUIPE</button>
-          <button className={`tab-btn ${activeTab==='ferramentas' ? 'active' : 'inactive'}`} onClick={() => setActiveTab('ferramentas')}>FERRAMENTAS</button>
         </div>
       </div>
 
       <main className="mt-6">
+        {activeTab === 'metricas' && <MetricsTab />}
         {activeTab === 'projetos' && <ProjectsTab />}
-        {activeTab === 'equipe' && <TeamTab />}
-        {activeTab === 'ferramentas' && <ToolsTab />}
       </main>
 
-      {creating && <CreateProjectFlow onClose={() => setCreating(false)} />}
+      {creating && <CreateProjectFlow onClose={() => setCreating(false)} onConfirm={() => { setCreating(false); setActiveTab('projetos') }} />}
     </div>
   )
 }
