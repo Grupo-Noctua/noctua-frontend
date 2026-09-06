@@ -158,7 +158,17 @@ export default function CreateProjectFlow({onClose, onConfirm}:{onClose:()=>void
                 </div>
 
                 <div className="form-footer">
-                  <button className="" onClick={()=>{setBudget("100000"); setQty(3); setSeniorities(['Júnior','Pleno','Sênior']); setFileName(undefined)}} style={{background:'transparent',border:0,color:'var(--textMuted)',fontSize:14}}>Limpar campos</button>
+                <button className="" onClick={()=>{
+                  // Clear all form fields to initial empty/default state
+                  setBudget('')
+                  setQty(1)
+                  setSeniorities([])
+                  setFileName(undefined)
+                  setDragging(false)
+                  setAssigned({})
+                  setEditing(false)
+                  setExpandedSlot(null)
+                }} style={{background:'transparent',border:0,color:'var(--textMuted)',fontSize:14}}>Limpar campos</button>
                   <button className="btn-accent" onClick={()=>setStage(2)} style={{padding:'10px 18px',borderRadius:8,fontWeight:600}}>Analisar e montar equipe →</button>
                 </div>
               </div>

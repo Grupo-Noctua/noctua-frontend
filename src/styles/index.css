@@ -15,6 +15,9 @@
   --textSub: #5a554f;
   --textMuted: #8a8078;
   --accent: #D04A02;
+  --accent1: #D04A02; /* orange */
+  --accent2: #1e7a45; /* green */
+  --accent3: #1854DB; /* blue */
   --accentBg: rgba(208,74,2,0.10);
   --accentBorder: rgba(208,74,2,0.32);
   --rowEven: #e8e4de;
@@ -88,6 +91,9 @@ body{
 .kpi-value{font-weight:600;font-size:28px;font-family:'DM Mono', monospace;color:var(--text)}
 .kpi-sub{font-size:12px;color:var(--textMuted);margin-top:4px}
 .kpi-left-accent{border-left:3px solid var(--accent);padding-left:16px}
+.kpi-accent-1{border-left:3px solid var(--accent1);padding-left:16px}
+.kpi-accent-2{border-left:3px solid var(--accent2);padding-left:16px}
+.kpi-accent-3{border-left:3px solid var(--accent3);padding-left:16px}
 
 /* Table styles */
 .table-wrapper{border-radius:12px;overflow:hidden;border:1px solid var(--border);}
@@ -191,3 +197,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 /* Small utilities */
 .text-muted{color:var(--textMuted)}
 .text-sub{color:var(--textSub)}
+
+/* Custom scrollbars for form drawer and form body */
+.drawer-panel::-webkit-scrollbar, .form-card .form-body::-webkit-scrollbar {
+  width:12px;
+  height:12px;
+}
+.drawer-panel::-webkit-scrollbar-track, .form-card .form-body::-webkit-scrollbar-track{
+  background: transparent;
+}
+.drawer-panel::-webkit-scrollbar-thumb, .form-card .form-body::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, var(--accentBg), rgba(0,0,0,0.06));
+  border-radius:8px;
+  border: 3px solid var(--surface);
+}
+/* Firefox */
+.drawer-panel, .form-card .form-body{
+  scrollbar-width: thin;
+  scrollbar-color: var(--accentBg) transparent;
+}

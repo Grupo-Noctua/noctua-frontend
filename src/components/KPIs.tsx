@@ -1,39 +1,38 @@
 import React from 'react'
-import { projects } from '../data/mock'
-
-function currency(n:number){
-  return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0})
-}
+import { projects, employees, tools } from '../data/mock'
 
 export default function KPIs(){
-  const active = projects.filter(p=>p.status!=='Concluído')
-  const inDay = active.filter(p=>p.status==='Em dia').length
-  const inRisk = active.filter(p=>p.status==='Em risco').length
-  const avgProgress = Math.round(projects.reduce((s,p)=>s+p.progresso,0)/projects.length)
-  const totalBudget = projects.reduce((s,p)=>s+p.orcamento, 0)
-  const totalSpent = projects.reduce((s,p)=>s+p.gasto, 0)
-  const pctUsed = Math.round((totalSpent/totalBudget)*100)
+  const totalEmployees = employees.length
+  const projectsAnalyzed = projects.length
+
+  // determine most used tool by summing usoPorProjeto values
+  const mostUsed = (()=>{
+    let best = {toolName: '—', score:-1}
+    for(const t of tools){
+      const score = Object.values(t.usoPorProjeto).reduce((s,v)=>s+v,0)
+      if(score > best.score){ best = {toolName: t.ferramenta, score} }
+    }
+    return best.toolName
+  })()
 
   return (
-    <div className="grid grid-cols-4 gap-4 mb-8">
-      <div className="card kpi-left-accent">
-        <div className="kpi-label">Projetos ativos</div>
-        <div className="kpi-value">{active.length}</div>
-        <div className="kpi-sub">{inDay} em dia · {inRisk} em risco</div>
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
+      <div className="card kpi-accent-1">
+        <div className="kpi-label">Número de Funcionários</div>
+        <div className="kpi-value">{totalEmployees}</div>
+        <div className="kpi-sub">Total de funcionários cadastrados</div>
       </div>
-      <div className="card">
-        <div className="kpi-label">Progresso médio</div>
-        <div className="kpi-value">{avgProgress}%</div>
+
+      <div className="card kpi-accent-2">
+        <div className="kpi-label">Número de Projetos Analisados</div>
+        <div className="kpi-value">{projectsAnalyzed}</div>
+        <div className="kpi-sub">Projetos usados para as métricas</div>
       </div>
-      <div className="card">
-        <div className="kpi-label">Em risco / atrasados</div>
-        <div className="kpi-value">{projects.filter(p=>p.status==='Em risco' || p.status==='Atrasado').length}</div>
-        <div className="kpi-sub">{projects.filter(p=>p.status==='Em dia').length} em dia</div>
-      </div>
-      <div className="card">
-        <div className="kpi-label">Orçamento total</div>
-        <div className="kpi-value">{currency(totalBudget)}</div>
-        <div className="kpi-sub">{currency(totalSpent)} gasto — {pctUsed}% utilizado</div>
+
+      <div className="card kpi-accent-3">
+        <div className="kpi-label">Ferramenta mais utilizada</div>
+        <div className="kpi-value">{mostUsed}</div>
+        <div className="kpi-sub">Baseado no somatório de uso por projeto</div>
       </div>
     </div>
   )

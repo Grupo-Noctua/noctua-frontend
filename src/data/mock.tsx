@@ -16,6 +16,8 @@ export type Employee = {
   nome: string
   cargo: string
   departamento: string
+  senioridade?: 'Junior'|'Pleno'|'Senior'
+  tecnologia?: string
   projectId?: string
   disponibilidade: number
   dataIngresso: string
@@ -30,16 +32,24 @@ export type Tool = {
   usoPorProjeto: Record<string,0|1|2|3>
 }
 
-export const employees: Employee[] = Array.from({length:15}).map((_,i)=>({
-  id: `u${i+1}`,
-  nome: ['Ana Silva','Bruno Costa','Carla Maia','Diego Rocha','Eduardo Lima','Fernanda Dias','Gustavo Nunes','Helena Pinto','Igor Santos','Juliana Moraes','Karim Souza','Lucas Alves','Mariana Reis','Nicolas Prado','Olivia Castro'][i],
-  cargo: ['Analista','Desenvolvedor','Designer','Engenheiro de Dados','Gerente de Projeto'][i%5],
-  departamento: ['TI','Dados','Design','Infra','Consultoria'][i%5],
-  projectId: i<10? `p${(i%6)+1}`: undefined,
-  disponibilidade: [90,70,50,100,30,80,60,40,20,75,55,85,65,45,95][i],
-  dataIngresso: `202${i%3+1}-0${(i%9)+1}-01`,
-  localizacao: ['SP','RJ','BH','POA','Recife'][i%5]
-}))
+const techPool = ['React','Node.js','Python','Postgres','AWS','Docker','Kubernetes','Spark','PowerBI','Figma']
+const seniorPool: Employee['senioridade'][] = ['Junior','Pleno','Senior']
+
+export const employees: Employee[] = Array.from({length:40}).map((_,i)=>{
+  const defaultNames = ['Ana Silva','Bruno Costa','Carla Maia','Diego Rocha','Eduardo Lima','Fernanda Dias','Gustavo Nunes','Helena Pinto','Igor Santos','Juliana Moraes','Karim Souza','Lucas Alves','Mariana Reis','Nicolas Prado','Olivia Castro']
+  return ({
+    id: `u${i+1}`,
+    nome: defaultNames[i] || `Usuário ${i+1}`,
+    cargo: ['Analista','Desenvolvedor','Designer','Engenheiro de Dados','Gerente de Projeto'][i%5],
+    departamento: ['TI','Dados','Design','Infra','Consultoria'][i%5],
+    senioridade: seniorPool[i%3],
+    tecnologia: techPool[i%techPool.length],
+    projectId: i<20? `p${(i%6)+1}`: undefined,
+    disponibilidade: [90,70,50,100,30,80,60,40,20,75,55,85,65,45,95,88,72,66,59,81,47,93,37,52,68,74,82,49,58,61,79,33,41,71,64,86,56,39,70,77][i%40],
+    dataIngresso: `202${i%3+1}-0${(i%9)+1}-01`,
+    localizacao: ['SP','RJ','BH','POA','Recife'][i%5]
+  })
+})
 
 export const projects: Project[] = [
   {id:'p1',nome:'Portal Cliente',cliente:'Empresa A',status:'Em dia',progresso:78,orcamento:800000,gasto:400000,deadline:'2026-11-30',fase:'Desenvolvimento',equipe:['u1','u2','u3']},

@@ -32,18 +32,7 @@ export default function ToolsTab(){
 
   const list = useMemo(()=> tools.filter(t=>t.categoria===cat),[cat])
 
-  // KPI: total unique tools
-  const totalTools = useMemo(()=> new Set(tools.map(t=>t.ferramenta)).size,[])
-
-  // KPI: most adopted -> sum of usage levels per tool
-  const mostAdopted = useMemo(()=>{
-    let best: {tool: Tool|null,score:number} = {tool:null,score:-1}
-    for(const t of tools){
-      const score = Object.values(t.usoPorProjeto).reduce((s,v)=>s+v,0)
-      if(score>best.score) best = {tool:t,score}
-    }
-    return best.tool
-  },[])
+  
 
   // group by subcategory
   const groups = useMemo(()=>{
@@ -65,20 +54,6 @@ export default function ToolsTab(){
 
   return (
     <div>
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="card kpi-left-accent">
-          <div className="kpi-label">Ferramentas em uso</div>
-          <div className="kpi-value">{totalTools}</div>
-          <div className="kpi-sub">Distribuídas entre {CATEGORIES.length} categorias</div>
-        </div>
-
-        <div className="card" style={{borderLeft:'3px solid #1e7a45', paddingLeft:16}}>
-          <div className="kpi-label">Mais adotada</div>
-          <div className="kpi-value">{mostAdopted?.ferramenta ?? '—'}</div>
-          <div className="kpi-sub">{mostAdopted?.subcategoria ?? ''}</div>
-        </div>
-      </div>
 
       {/* Header + dropdown */}
       <div className="flex items-center justify-between mb-4">
