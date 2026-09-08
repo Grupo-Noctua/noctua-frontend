@@ -14,7 +14,7 @@ export default function CreateProjectFlow({onClose, onConfirm}:{onClose:()=>void
   const [editing, setEditing] = useState(false)
   const [expandedSlot, setExpandedSlot] = useState<number|null>(null)
 
-  const seniorPool = useMemo(()=>({
+  const seniorPool = useMemo(() => ({
     'Estagiário':['Estagiário de QA','Estagiário de Frontend'],
     'Júnior':['Analista Júnior','Desenvolvedor Júnior'],
     'Pleno':['Desenvolvedor Pleno','Analista Pleno'],
@@ -25,7 +25,7 @@ export default function CreateProjectFlow({onClose, onConfirm}:{onClose:()=>void
 
   function simulateAI(){
     // generate N vacancies round-robin
-    const vacs = range(qty).map(i=>{
+    const vacs = range(qty).map(i => {
       const s = seniorities.length ? seniorities[i % seniorities.length] : 'Pleno'
       const titles = seniorPool[s] || ['Profissional']
       return {vaga: i+1, cargo: titles[i % titles.length], senioridade: s}
@@ -60,12 +60,17 @@ export default function CreateProjectFlow({onClose, onConfirm}:{onClose:()=>void
                 </button>
                 <div style={{display:'flex',flexDirection:'column'}}>
                   <div style={{fontSize:14,fontWeight:600,color:'var(--text)'}}>Criação da equipe</div>
-                  <div style={{fontSize:12,fontFamily:'DM Mono',color:'var(--textMuted)'}}>Análise de IA · {qty} vagas sugeridas</div>
+                  <div style={{fontSize:12,fontFamily:'DM Mono',color:'var(--textMuted)'}}>Análise de IA · {qty} {qty === 1 ? 'vaga sugerida' : 'vagas sugeridas'}</div>
                 </div>
               </div>
 
               <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <button onClick={()=>setEditing(e=>!e)} className="surface" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:8,fontSize:14,fontWeight:500,background: editing? 'rgba(208,74,2,0.10)' : 'var(--chipBg)',color: editing? 'var(--accent)' : 'var(--textSub)',border: editing? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)'}}>{editing? 'Concluir edição' : 'Editar equipe'}</button>
+                <button onClick={()=>setEditing(e=>!e)} className="surface" style={{display:'flex',alignItems:'center',gap:8,padding:'8px 12px',borderRadius:8,fontSize:14,fontWeight:500,background: editing? 'rgba(208,74,2,0.10)' : 'var(--chipBg)',color: editing? 'var(--accent)' : 'var(--textSub)',border: editing? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)'}} aria-label="Editar equipe">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor" />
+                  </svg>
+                  <span>{editing? 'Concluir edição' : 'Editar equipe'}</span>
+                </button>
                 <button onClick={()=>{ setStage(3); }} className="btn-accent" style={{padding:'8px 14px',borderRadius:8,fontWeight:600}}>Confirmar equipe</button>
               </div>
             </div>
@@ -177,38 +182,38 @@ export default function CreateProjectFlow({onClose, onConfirm}:{onClose:()=>void
             {stage===2 && (
               <div className="split-container">
                 <div className="split-left">
-                  <div className="toolbar-sticky">
+                  <div className="toolbar-sticky" style={{display:'flex',alignItems:'center',gap:8,padding:'12px 16px',minHeight:49,boxSizing:'border-box',borderBottom:'1px solid var(--border)'}}>
                     <div style={{width:20,height:20,background:'rgba(208,74,2,0.12)',borderRadius:4,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--accent)'}}>📄</div>
-                    <div style={{fontSize:12,fontFamily:'DM Mono',color:'var(--textSub)'}}>{fileName || 'projeto-exemplo.pdf'}</div>
+                    <div style={{fontSize:12,fontFamily:'DM Mono',color:'var(--textSub)'}}>{fileName || 'descricao_projeto.pdf'}</div>
                     <div style={{marginLeft:'auto',fontSize:10,fontFamily:'DM Mono',background:'rgba(208,74,2,0.10)',color:'var(--accent)',padding:'2px 6px',borderRadius:4}}>IA</div>
                   </div>
 
                   <div style={{padding:'28px'}}>
-                    <div className="doc-header-meta">Análise gerada por IA · PwC Brasil · 01/01/2026</div>
+                    <div className="doc-header-meta">{`Análise gerada por IA · PwC Brasil · ${new Date().toLocaleDateString('pt-BR')}`}</div>
                     <div className="doc-title">Análise de Viabilidade e Composição de Equipe</div>
                     <div className="doc-sub" style={{marginTop:6}}>Baseado no documento de descrição de projeto enviado</div>
                     <div style={{marginTop:12,display:'flex',gap:8,flexWrap:'wrap'}}>
                       {seniorities.map(s=> <div key={s} style={{fontSize:11,fontFamily:'DM Mono',background:'rgba(208,74,2,0.08)',color:'var(--accent)',border:'1px solid rgba(208,74,2,0.2)',borderRadius:4,padding:'2px 6px'}}>{s}</div>)}
-                      <div style={{fontSize:11,fontFamily:'DM Mono',background:'var(--chipBg)',color:'var(--textSub)',borderRadius:4,padding:'2px 6px'}}>{qty} vagas</div>
+                      <div style={{fontSize:11,fontFamily:'DM Mono',background:'var(--chipBg)',color:'var(--textSub)',borderRadius:4,padding:'2px 6px'}}>{qty} {qty === 1 ? 'profissional' : 'profissionais'}</div>
                     </div>
                     <div style={{borderBottom:'1px solid var(--border)',paddingBottom:12,marginTop:12}} />
 
                     <div style={{marginTop:12}} className="doc-section">
                       {[
                         {n:'01',t:'Resumo Executivo',b:'Resumo curto sobre o objetivo e escopo do projeto.'},
-                        {n:'02',t:'Tecnologias Identificadas',b:'React, Node.js, AWS e Postgres.'},
+                        {n:'02',t:'Tecnologias Identificadas',b:'React, Node.js, AWS e Postgree.'},
                         {n:'03',t:'Complexidade Estimada',b:'Média — integração com sistemas legados.'},
                         {n:'04',t:'Perfil de Equipe Recomendado',b:'Desenvolvedor Backend, Engenheiro de Dados, Gerente de Projeto.'},
                         {n:'05',t:'Riscos Identificados',b:'① Dependências externas\n② Falta de testes automatizados'},
                         {n:'06',t:'Pontuação de Confiança',b:'75% — base suficiente para sugestão inicial.'}
                       ].map(s=> (
-                        <div key={s.n}>
-                          <div className="section-row">
+                        <div key={s.n} style={{marginBottom:26}}>
+                          <div className="section-row" style={{marginBottom:10}}>
                             <div className="section-num">{s.n}</div>
-                            <div style={{flex:1,height:1,background:'var(--border)'}} />
+                            <div style={{flex:1,height:1,background:'var(--border)',margin:'0 10px'}} />
                             <div className="section-title">{s.t}</div>
                           </div>
-                          <div className="section-body">{s.b}</div>
+                          <div className="section-body" style={{marginLeft:32,marginTop:6,maxWidth:620,lineHeight:1.55,whiteSpace:'pre-line'}}>{s.b}</div>
                         </div>
                       ))}
                     </div>
@@ -218,39 +223,41 @@ export default function CreateProjectFlow({onClose, onConfirm}:{onClose:()=>void
                 </div>
 
                 <div className="split-right">
-                  <div className="toolbar-sticky" style={{justifyContent:'space-between'}}>
-                    <div style={{fontSize:12,fontFamily:'DM Mono',color:'var(--textSub)',fontWeight:600}}>Equipe sugerida pela IA</div>
-                    <div style={{fontSize:12,fontFamily:'DM Mono',background:'rgba(208,74,2,0.10)',color:'var(--accent)',border:'1px solid rgba(208,74,2,0.20)',borderRadius:999,padding:'2px 8px'}}>{qty} vagas</div>
-                  </div>
+                   <div className="toolbar-sticky" style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8,padding:'12px 16px',minHeight:40,boxSizing:'border-box',borderBottom:'1px solid var(--border)'}}>
+                     <div style={{fontSize:12,fontFamily:'DM Mono',color:'var(--textSub)',fontWeight:600}}>Equipe sugerida pela IA</div>
+                     <div style={{fontSize:12,fontFamily:'DM Mono',background:'rgba(208,74,2,0.10)',color:'var(--accent)',border:'1px solid rgba(208,74,2,0.20)',borderRadius:999,padding:'2px 8px'}}>{qty} {qty === 1 ? 'vaga' : 'vagas'}</div>
+                   </div>
 
                   <div style={{padding:'20px'}}>
                     <div style={{padding:'12px',borderRadius:12,background:'var(--surfaceAlt)',border:'1px solid var(--border)',display:'flex',gap:12,alignItems:'center'}}>
-                      <div style={{width:20,height:20,background:'var(--accent)',borderRadius:999,display:'flex',alignItems:'center',justifyContent:'center',color:'white'}}>i</div>
+                      <div style={{width:20,height:20,background:'var(--accent)',borderRadius:999,padding:0,boxSizing:'border-box',display:'inline-flex',flex:'0 0 20px', alignItems:'center',justifyContent:'center',color:'white',fontSize:11,lineHeight:1}} aria-hidden="true">i</div>
                       <div style={{fontSize:12,color:'var(--textSub)',lineHeight:1.4}}>Esta composição foi gerada automaticamente com base na análise do documento de descrição do projeto e nas preferências de senioridade informadas. Clique em <strong style={{color:'var(--text)',fontWeight:600}}>Editar equipe</strong> para ajustar manualmente.</div>
                     </div>
 
                     <div className="vacancies-list">
-                      {vacs.map(v=>{
-                        const assignedId = assigned[v.vaga]
-                        const u = employees.find(e=>e.id===assignedId)
-                        const isExpanded = expandedSlot === v.vaga
-                        return (
+                       {vacs.map(v=>{
+                         const assignedId = assigned[v.vaga]
+                         const u = employees.find(e=>e.id===assignedId)
+                         const isExpanded = expandedSlot === v.vaga
+                         const availability = u?.disponibilidade ?? 0
+                         const initials = u?.nome ? u.nome.split(' ').map(n=>n[0]).slice(0,2).join('') : ''
+                         return (
                           <div key={v.vaga} className={`vacancy-card ${assignedId? 'vacancy-assigned':''}`}>
                             <div className="vacancy-row" onClick={()=>{ if(editing) setExpandedSlot(s => s === v.vaga ? null : v.vaga) }} style={{background: assignedId? 'rgba(208,74,2,0.06)': 'transparent'}}>
                               <div className="vacancy-num">{String(v.vaga).padStart(2,'0')}</div>
-                              <div className="vacancy-avatar" style={{background: assignedId? 'rgba(208,74,2,0.18)': 'var(--chipBg)', border: assignedId? '1px solid rgba(208,74,2,0.25)': '1px dashed var(--border)', color: assignedId? 'var(--accent)': 'var(--textMuted)'}}>{assignedId? (u?.nome.split(' ').map(n=>n[0]).slice(0,2).join('')) : '?'}</div>
+                               <div className="vacancy-avatar" style={{background: assignedId? 'rgba(208,74,2,0.18)': 'var(--chipBg)', border: assignedId? '1px solid rgba(208,74,2,0.25)': '1px dashed var(--border)', color: assignedId? 'var(--accent)': 'var(--textMuted)'}}>{assignedId? (initials || '?') : '?'}</div>
                               <div className="vacancy-content">
                                 <div className="vacancy-title">{v.cargo}</div>
                                 <div className="vacancy-sub">{v.senioridade} · Engenharia{assignedId? ` · ${u?.nome}`: ''}</div>
                               </div>
                               <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:8}}>
-                                {assignedId && <div style={{fontSize:10,fontFamily:'DM Mono',padding:'2px 6px',borderRadius:4,background:u!.disponibilidade>=60? '#e6f8ed': u!.disponibilidade>=30? 'rgba(219,78,24,0.10)' : 'rgba(173,27,2,0.08)',color: u!.disponibilidade>=60? '#1e7a45': u!.disponibilidade>=30? '#DB4E18': '#AD1B02'}}>{u!.disponibilidade}% livre</div>}
+                                 {assignedId && <div style={{fontSize:10,fontFamily:'DM Mono',padding:'2px 6px',borderRadius:4,background:availability>=60? '#e6f8ed': availability>=30? 'rgba(219,78,24,0.10)' : 'rgba(173,27,2,0.08)',color: availability>=60? '#1e7a45': availability>=30? '#DB4E18': '#AD1B02'}}>{availability}% livre</div>}
                                 {editing && <svg style={{transform: isExpanded? 'rotate(180deg)':'rotate(0deg)',transition:'transform .18s'}} width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                               </div>
                             </div>
 
                             {/* Dropdown: list of employees to assign (only in editing mode and when expanded) */}
-                            {editing && isExpanded && (
+                             {editing && isExpanded && (
                               <div style={{borderTop:'1px solid var(--border)',background:'var(--surface)'}}>
                                 {employees.map((emp, idx)=>{
                                   const taken = Object.values(assigned).includes(emp.id)
@@ -277,14 +284,6 @@ export default function CreateProjectFlow({onClose, onConfirm}:{onClose:()=>void
                       })}
                     </div>
 
-                    <div style={{display:'flex',justifyContent:'space-between',marginTop:12}}>
-                      <button className="surface" onClick={()=>{ setStage(1); setAssigned({}); setEditing(false); setExpandedSlot(null) }}>← Voltar</button>
-                      <div>
-                        {/* duplicate of header edit button for convenience */}
-                        <button className="surface" onClick={()=>setEditing(e=>!e)} style={{marginRight:8}}>{editing? 'Concluir edição' : 'Editar equipe'}</button>
-                        <button className="btn-accent" onClick={() => setStage(3)}>Confirmar equipe</button>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
