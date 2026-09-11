@@ -16,7 +16,7 @@ export type Employee = {
   nome: string
   cargo: string
   departamento: string
-  senioridade?: 'Junior'|'Pleno'|'Senior'
+  senioridade?: string
   tecnologia?: string
   projectId?: string
   disponibilidade: number
@@ -33,16 +33,18 @@ export type Tool = {
 }
 
 const techPool = ['React','Node.js','Python','Postgres','AWS','Docker','Kubernetes','Spark','PowerBI','Figma']
-const seniorPool: Employee['senioridade'][] = ['Junior','Pleno','Senior']
+// include full set of seniorities used in the CreateProjectFlow form
+const seniorPool: Employee['senioridade'][] = ['Estagiário','Júnior','Pleno','Sênior','Especialista','Tech Lead']
 
-export const employees: Employee[] = Array.from({length:40}).map((_,i)=>{
+// increase number of mock employees so seniority charts show more variation
+export const employees: Employee[] = Array.from({length:80}).map((_,i)=>{
   const defaultNames = ['Ana Silva','Bruno Costa','Carla Maia','Diego Rocha','Eduardo Lima','Fernanda Dias','Gustavo Nunes','Helena Pinto','Igor Santos','Juliana Moraes','Karim Souza','Lucas Alves','Mariana Reis','Nicolas Prado','Olivia Castro']
   return ({
     id: `u${i+1}`,
     nome: defaultNames[i] || `Usuário ${i+1}`,
     cargo: ['Analista','Desenvolvedor','Designer','Engenheiro de Dados','Gerente de Projeto'][i%5],
     departamento: ['TI','Dados','Design','Infra','Consultoria'][i%5],
-    senioridade: seniorPool[i%3],
+    senioridade: seniorPool[i%seniorPool.length],
     tecnologia: techPool[i%techPool.length],
     projectId: i<20? `p${(i%6)+1}`: undefined,
     disponibilidade: [90,70,50,100,30,80,60,40,20,75,55,85,65,45,95,88,72,66,59,81,47,93,37,52,68,74,82,49,58,61,79,33,41,71,64,86,56,39,70,77][i%40],

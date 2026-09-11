@@ -1,164 +1,196 @@
 import React from 'react'
 import { employees, projects, tools } from '../data/mock'
 
-function BarChart({labels,counts,width=520,height=220}:{labels:string[],counts:number[],width?:number,height?:number}){
-  const max = Math.max(...counts,1)
-  // ensure enough vertical space per row to fit larger text
-  const rowH = Math.max(60, Math.floor((height-20)/Math.max(1,labels.length)))
-  // allocate more space for labels when text is larger
-  const leftLabelW = Math.min(420, Math.max(140, Math.floor(width * 0.34)))
-  // Use responsive svg: viewBox controls internal coords, rendered width is 100% of container
+function ChartCard({title,children}:{title:string,children:React.ReactNode}){
   return (
-    <svg style={{width:'100%',height:'auto'}} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMinYMin meet">
-      {labels.map((l,i)=>{
-        const w = (counts[i]/max) * (width - leftLabelW - 40)
-        const y = 10 + i*rowH
-        return (
-          <g key={l}>
-            <text x={12} y={y+rowH/2} dominantBaseline="middle" style={{fontSize:20,fontWeight:700}} fill="var(--text)">{l}</text>
-            <rect x={leftLabelW} y={y+6} width={Math.max(8,w)} height={rowH-12} rx={6} fill="var(--accent)" />
-            <text x={leftLabelW + Math.max(8,w) + 12} y={y+rowH/2} dominantBaseline="middle" style={{fontSize:18,fontFamily:'DM Mono',fontWeight:800}} fill="var(--text)">{counts[i]}</text>
-          </g>
-        )
-      })}
-    </svg>
+    <div style={{borderRadius:16,background:'var(--surface)',border:'1px solid var(--border)'}}>
+      <div style={{padding:'16px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid var(--border)'}}>
+        <div style={{fontSize:14,fontWeight:700}}>{title}</div>
+      </div>
+      <div style={{padding:'20px 24px'}}>{children}</div>
+    </div>
   )
 }
 
-function VerticalBarChart({labels,counts,width=800,height=240,showYAxis=false,numTicks=5}:{labels:string[],counts:number[],width?:number,height?:number,showYAxis?:boolean,numTicks?:number}){
-  const max = Math.max(...counts,1)
-  const w = Math.max(24, Math.floor(width / Math.max(1, labels.length)))
-  const gap = Math.max(6, Math.floor(w * 0.2))
-  const innerW = labels.length * (w + gap)
-  const leftPadding = showYAxis ? 80 : 40
-  // extra vertical space reserved for rotated labels so they don't get clipped
-  const labelSpace = Math.max(160, Math.floor(height * 0.35))
-  const drawArea = height
-  const viewH = drawArea + labelSpace
+function ColumnChartEmployeesTech(){
+  // data from graficos.md
+  const data = [
+    ['Node.js',11],
+    ['Spark',8],
+    ['React',10],
+    ['Postgres',7],
+    ['Docker',13],
+    ['Figma',6],
+    ['AWS',9],
+    ['PowerBI',5],
+    ['Python',12]
+  ] as [string,number][]
+
+  const max = Math.max(...data.map(d=>d[1]))
+  // use a single orange color for all bars
+  const barColor = 'var(--accent)'
 
   return (
-    <svg style={{width:'100%',height:'auto'}} viewBox={`0 0 ${innerW + leftPadding + 20} ${viewH}`} preserveAspectRatio="xMinYMin meet">
-      {/* y axis grid and labels */}
-      {showYAxis && (()=>{
-        const ticks = [] as JSX.Element[]
-        for(let i=0;i<=numTicks;i++){
-          const v = (i/numTicks) * max
-          const y = drawArea - (v/max) * (drawArea - 40)
-          ticks.push(
-            <g key={i}>
-              <line x1={leftPadding-8} x2={leftPadding + innerW} y1={y} y2={y} stroke="rgba(255,255,255,0.04)" />
-              <text x={leftPadding-12} y={y+4} textAnchor="end" style={{fontSize:14,fontFamily:'DM Mono'}} fill="var(--text)">{Math.round(v)}</text>
-            </g>
-          )
-        }
-        return ticks
-      })()}
-
-      {/* bars */}
-      {labels.map((l,i)=>{
-        const barH = (counts[i]/max) * (drawArea - 40)
-        const x = leftPadding + i * (w + gap)
-        const y = drawArea - barH
+    <div style={{height:176,paddingTop:24,display:'flex',alignItems:'end',gap:8}}>
+      {data.map(([label,count],i)=>{
+        const h = Math.max(6, Math.round((count / max) * 110))
         return (
-          <g key={l}>
-            <rect x={x} y={y} width={w} height={barH} rx={6} fill="var(--accent)" />
-            <text x={x + w/2} y={y - 14} textAnchor="middle" style={{fontSize:20,fontFamily:'DM Mono',fontWeight:800}} fill="var(--text)">{counts[i]}</text>
-            <g transform={`translate(${x + w/2}, ${drawArea + (labelSpace * 0.6)}) rotate(-45)`}>
-              <text x={0} y={0} textAnchor="end" style={{fontSize:20,fontWeight:700}} fill="var(--text)">{l}</text>
-            </g>
-          </g>
+          <div key={label} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
+            <div style={{fontSize:11,fontFamily:'DM Mono',fontWeight:700,textAlign:'center'}}>{count}</div>
+            <div style={{width:'100%',display:'flex',alignItems:'flex-end',justifyContent:'center'}}>
+              <div style={{width:'76%',height:h,background:barColor,borderRadius:'4px 4px 0 0'}} />
+            </div>
+            <div style={{height:44,overflow:'hidden',fontSize:9,color:'var(--textMuted)',writingMode:'vertical-rl',transform:'rotate(180deg)',textAlign:'center'}}>{label}</div>
+          </div>
         )
       })}
-      {/* x axis line */}
-      <line x1={leftPadding} x2={leftPadding + innerW} y1={drawArea} y2={drawArea} stroke="var(--border)" />
-    </svg>
+    </div>
+  )
+}
+
+function HorizontalBar({label, value, max, color}:{label:string,value:number,max:number,color:string}){
+  const pct = max? (value/max):0
+  const showWhite = pct > 0.25
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:12}}>
+      <div style={{width:130,fontSize:12,color:'var(--textSub)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={label}>{label}</div>
+      <div style={{flex:1,position:'relative',height:24,borderRadius:8,background:'var(--chipBg)',border:'1px solid var(--border)',overflow:'hidden'}}>
+        <div style={{width:`${Math.round(pct*100)}%`,height:'100%',background:color,borderRadius:8,transition:'width .25s'}} />
+        <div style={{position:'absolute',left:8,top:0,bottom:0,display:'flex',alignItems:'center',pointerEvents:'none',fontSize:11,fontFamily:'DM Mono',fontWeight:700,color: showWhite? '#fff' : 'var(--text)'}}>{value}</div>
+      </div>
+      <div style={{width:40,textAlign:'right',fontSize:12,fontFamily:'DM Mono'}}>{value}</div>
+    </div>
+  )
+}
+
+function HorizontalBarsByDept(){
+  const deptMap = new Map<string,number>()
+  for(const e of employees){
+    deptMap.set(e.departamento, (deptMap.get(e.departamento)||0) + 1)
+  }
+  const items = Array.from(deptMap.entries()).sort((a,b)=>b[1]-a[1])
+  const max = items.length? items[0][1]:1
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:10}}>
+      {items.map(([label,value])=> (
+        <HorizontalBar key={label} label={label} value={value} max={max} color={'var(--accent)'} />
+      ))}
+    </div>
+  )
+}
+
+function HorizontalBarsBySeniority(){
+  // hierarchy and color opacities as per graficos.md
+  const hierarchy = ['Estagiário','Júnior','Pleno','Sênior','Especialista','Tech Lead']
+  // use solid hex shades instead of translucent rgba so colors don't get darker in dark mode
+  // use the same orange for all seniority bars
+  const opacityMap: Record<string,string> = {
+    'Estagiário':'var(--accent)',
+    'Júnior':'var(--accent)',
+    'Pleno':'var(--accent)',
+    'Sênior':'var(--accent)',
+    'Especialista':'var(--accent)',
+    'Tech Lead':'var(--accent)'
+  }
+
+  // map mock seniorities to these labels
+  const mapName: Record<string,string> = { 'Junior':'Júnior', 'Pleno':'Pleno', 'Senior':'Sênior' }
+  const counts = new Map<string,number>()
+  for(const e of employees){
+    const s = e.senioridade? (mapName[e.senioridade] || e.senioridade) : 'Estagiário'
+    counts.set(s, (counts.get(s)||0) + 1)
+  }
+  // include all seniority levels from the form (show zero if none)
+  const items = hierarchy.map(h=> [h, counts.get(h)||0] as [string,number])
+  const max = items.length? Math.max(...items.map(i=>i[1])):1
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:10}}>
+      {items.map(([label,value])=> (
+        <HorizontalBar key={label} label={label} value={value} max={max} color={opacityMap[label] || 'rgba(208,74,2,0.6)'} />
+      ))}
+    </div>
+  )
+}
+
+// helper to draw donut slice path
+function describeDonutSlice(cx:number,cy:number,outerR:number,innerR:number,startAngle:number,endAngle:number){
+  const startOuterX = cx + outerR * Math.cos(startAngle)
+  const startOuterY = cy + outerR * Math.sin(startAngle)
+  const endOuterX = cx + outerR * Math.cos(endAngle)
+  const endOuterY = cy + outerR * Math.sin(endAngle)
+  const startInnerX = cx + innerR * Math.cos(endAngle)
+  const startInnerY = cy + innerR * Math.sin(endAngle)
+  const endInnerX = cx + innerR * Math.cos(startAngle)
+  const endInnerY = cy + innerR * Math.sin(startAngle)
+
+  const largeArc = endAngle - startAngle > Math.PI ? 1 : 0
+  return `M ${startOuterX} ${startOuterY} A ${outerR} ${outerR} 0 ${largeArc} 1 ${endOuterX} ${endOuterY} L ${startInnerX} ${startInnerY} A ${innerR} ${innerR} 0 ${largeArc} 0 ${endInnerX} ${endInnerY} Z`
+}
+
+function DonutChart(){
+  const data = [
+    ['Node.js',11],['Spark',11],['React',9],['Postgres',9],['Docker',9],['Figma',9],['AWS',7],['PowerBI',7],['Python',7]
+  ] as [string,number][]
+  const total = data.reduce((s,[,v])=>s+v,0)
+  const colors = ['#D04A02','rgba(208,74,2,0.78)','rgba(208,74,2,0.60)','rgba(208,74,2,0.44)','#6B7280','#9CA3AF','rgba(208,74,2,0.30)','#4B5563','#D1D5DB']
+
+  let angle = -Math.PI/2 // start at top
+  const cx = 110, cy = 110, outerR = 90, innerR = 48
+
+  return (
+    // center the whole donut+legend block inside the card
+    <div style={{display:'flex',gap:40,alignItems:'center',justifyContent:'center',width:'100%',minHeight:260}}>
+      <svg width={220} height={220} viewBox={`0 0 220 220`}>
+        <g>
+          {data.map(([label,value],i)=>{
+            const sliceAngle = (value/total) * Math.PI * 2
+            const path = describeDonutSlice(cx,cy,outerR,innerR,angle, angle + sliceAngle)
+            const key = `s${i}`
+            angle += sliceAngle
+            return (<path key={key} d={path} fill={colors[i%colors.length]} stroke="#fff" strokeWidth={2} />)
+          })}
+          <text x={110} y={110} textAnchor="middle" dominantBaseline="middle" style={{fontSize:22,fontFamily:'DM Mono',fontWeight:800}} fill="var(--text)">{total}</text>
+          <text x={110} y={132} textAnchor="middle" dominantBaseline="hanging" style={{fontSize:10,fontFamily:'DM Mono'}} fill="var(--textMuted)">usos totais</text>
+        </g>
+      </svg>
+
+      <div style={{display:'flex',flexDirection:'column',gap:10,width:260}}>
+        {data.map(([label,value],i)=>{
+          const pct = Math.round((value/total)*100)
+          return (
+            <div key={label} style={{display:'flex',alignItems:'center',gap:12}}>
+              <div style={{width:12,height:12,background:colors[i%colors.length],borderRadius:2,flex:'0 0 12px'}} />
+              <div style={{flex:1,fontSize:14,color:'var(--text)',minWidth:0,marginLeft:6}}>{label}</div>
+              <div style={{width:72,fontSize:12,fontFamily:'DM Mono',color:'var(--textMuted)',textAlign:'right'}}>{value} proj.</div>
+              <div style={{width:36,textAlign:'right',fontSize:12,fontFamily:'DM Mono',fontWeight:700}}>{pct}%</div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
 export default function MetricsTab(){
-  // Projects x Technology: for each tool, compute a varied usage metric (sum of usage levels across projects)
-  const TOP_PROJECT_TECH = 12
-  const EXCLUDE_TOOLS = new Set(['Kubernetes','ElasticSearch'])
-  const projUse = tools.map(t=> ({name: t.ferramenta, count: Object.values(t.usoPorProjeto).reduce<number>((s,v)=>s + (v||0), 0) }))
-  const projUseFiltered = projUse.filter(pu=> !EXCLUDE_TOOLS.has(pu.name))
-  const projUseSorted = projUseFiltered.sort((a,b)=>b.count - a.count)
-
-  // Employees counts map
-  const techCountMap = new Map<string, number>()
-  for(const e of employees){
-    if(!e.tecnologia) continue
-    techCountMap.set(e.tecnologia, (techCountMap.get(e.tecnologia) || 0) + 1)
-  }
-
-  // choose top N technologies ensuring none have zero in either projects or employees
-  const selected: string[] = []
-  const selectedProjCounts: number[] = []
-  const selectedEmpCounts: number[] = []
-  for(const item of projUseSorted){
-    if(selected.length >= TOP_PROJECT_TECH) break
-    const empCount = techCountMap.get(item.name) || 0
-    const projCount = item.count
-    if(projCount > 0 && empCount > 0){
-      selected.push(item.name)
-      selectedProjCounts.push(projCount)
-      selectedEmpCounts.push(empCount)
-    }
-  }
-  // fallback: if none selected (edge case), pick top by projCount (may include zeros in employees)
-  if(selected.length === 0){
-    const fallback = projUseSorted.slice(0, TOP_PROJECT_TECH)
-    for(const item of fallback){ selected.push(item.name); selectedProjCounts.push(item.count); selectedEmpCounts.push(techCountMap.get(item.name)||0) }
-  }
-
-  const techLabelsAll = selected
-  const techProjectCounts = selectedProjCounts
-  const techs = techLabelsAll
-  const techCounts = selectedEmpCounts
-
-  
-
-  // Employees per area (departamento)
-  const depts = Array.from(new Set(employees.map(e=>e.departamento)))
-  const deptCounts = depts.map(d=> employees.filter(e=>e.departamento===d).length)
-
-  // Employees by seniority
-  const seniorities = Array.from(new Set(employees.map(e=>e.senioridade))).filter(Boolean) as string[]
-  const seniorCounts = seniorities.map(s=> employees.filter(e=>e.senioridade===s).length)
-
-  // (projUseSorted and techLabelsAll already computed above)
-
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="card">
-          <div style={{fontSize:13,fontWeight:600}}>Funcionários x Tecnologia</div>
-          <div style={{marginTop:12}}>
-            <VerticalBarChart labels={techs} counts={techCounts} width={1000} height={500} />
-          </div>
-        </div>
+    <div style={{display:'flex',flexDirection:'column',gap:24}}>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
+        <ChartCard title="Funcionários x Tecnologia">
+          <ColumnChartEmployeesTech />
+        </ChartCard>
 
-        <div className="card">
-          <div style={{fontSize:13,fontWeight:600}}>Número de funcionários por Área</div>
-          <div style={{marginTop:12}}>
-            <BarChart labels={depts} counts={deptCounts} width={1000} height={Math.max(420, 80 + depts.length * 100)} />
-          </div>
-        </div>
+        <ChartCard title="Número de funcionários por Área">
+          <HorizontalBarsByDept />
+        </ChartCard>
 
-        <div className="card">
-          <div style={{fontSize:13,fontWeight:600}}>Número de funcionários por Senioridade</div>
-          <div style={{marginTop:12}}>
-            {/* increased height to improve readability */}
-            <BarChart labels={seniorities} counts={seniorCounts} width={1000} height={Math.max(420, 80 + seniorities.length * 100)} />
-          </div>
-        </div>
+        <ChartCard title="Número de funcionários por Senioridade">
+          <HorizontalBarsBySeniority />
+        </ChartCard>
 
-        <div className="card">
-          <div style={{fontSize:13,fontWeight:600}}>Projetos x Tecnologia</div>
-          <div style={{marginTop:12}}>
-            {/* increased height for vertical bar chart */}
-            <VerticalBarChart labels={techLabelsAll} counts={techProjectCounts} width={1000} height={500} />
-          </div>
-        </div>
+        <ChartCard title="Projetos x Tecnologia">
+          <DonutChart />
+        </ChartCard>
       </div>
     </div>
   )
