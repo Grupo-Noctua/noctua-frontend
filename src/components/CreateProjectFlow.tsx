@@ -283,14 +283,6 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                         )
                       })}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
-                      <button className="surface" onClick={() => { setStage(1); setAssigned({}); setEditing(false); setExpandedSlot(null) }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }}>← Voltar</button>
-                      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-                        {/* duplicate of header edit button for convenience */}
-                        <button className="surface" onClick={() => setEditing(e => !e)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }}>{editing ? 'Concluir edição' : 'Editar equipe'}</button>
-                        <button className="btn-accent" onClick={() => setStage(3)} style={{ padding: '6px 10px', borderRadius: 8, fontWeight: 500 }}>Confirmar equipe</button>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
