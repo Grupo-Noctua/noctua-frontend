@@ -38,7 +38,7 @@ export default function EmployeeDrawer({id,onClose}:{id:string,onClose:()=>void}
             </div>
           </div>
 
-          <button onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--chipBg)',border:'1px solid var(--border)'}}>×</button>
+          <button className="btn" onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--chipBg)',border:'1px solid var(--border)'}}>×</button>
         </div>
 
         <div className="drawer-content">

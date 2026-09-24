@@ -70,8 +70,21 @@ body{
 .surface{background:var(--surface);border:1px solid var(--border)}
 .surface-alt{background:var(--surfaceAlt)}
 .card{background:var(--surface);border-radius:16px;padding:20px;border:1px solid var(--border)}
-.btn-accent{background:var(--accent);color:white;border-radius:8px}
+/* Base button styles: used as foundation for variants */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);box-shadow:0 2px 6px rgba(26,26,26,0.04)}
+.btn svg{width:16px;height:16px;flex:0 0 16px}
+.btn:hover{filter:brightness(0.98)}
+
+/* Primary action (accent) - keep accent color but follow base sizing */
+.btn-accent{background:var(--accent);color:white;border:1px solid var(--accent);box-shadow:0 6px 18px rgba(208,74,2,0.12)}
+.btn-accent:hover{opacity:0.95}
+
 .accent{color:var(--accent)}
+
+/* Download button for base document */
+.btn-download{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;color:var(--accent);background:var(--surface);border:1px solid var(--accentBorder);box-shadow:0 2px 6px rgba(26,26,26,0.04)}
+.btn-download:hover{background:var(--accentBg);border-color:var(--accent);color:var(--accent)}
+.btn-download svg{width:16px;height:16px;flex:0 0 16px}
 
 /* Header styles */
 .app-header{position:sticky;top:0;z-index:30;padding-left:2rem;padding-right:2rem;padding-top:1rem;padding-bottom:1rem;background:color-mix(in srgb, var(--bg) 85%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}

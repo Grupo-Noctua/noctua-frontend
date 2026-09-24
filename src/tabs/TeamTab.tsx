@@ -41,9 +41,9 @@ export default function TeamTab(){
     <div>
       {/* 1. Filtro por Projeto */}
       <div className="flex items-center gap-2 flex-wrap mb-5">
-        <button onClick={()=>setFilterProject('Todos')} style={filterProject==='Todos' ? {background:'var(--accentBg)',color:'var(--accent)',border:'1px solid var(--accentBorder)',padding:'8px 16px',borderRadius:8,fontSize:13,fontWeight:500} : {background:'var(--chipBg)',color:'var(--textSub)',border:'1px solid var(--border)',padding:'8px 16px',borderRadius:8,fontSize:13,fontWeight:500}}>Todos</button>
+        <button className="btn" onClick={()=>setFilterProject('Todos')} style={filterProject==='Todos' ? {background:'var(--accentBg)',color:'var(--accent)',border:'1px solid var(--accentBorder)'} : {background:'var(--chipBg)',color:'var(--textSub)',border:'1px solid var(--border)'}}>Todos</button>
         {projects.map(p=> (
-          <button key={p.id} onClick={()=>setFilterProject(p.id)} style={filterProject===p.id ? {background:'var(--accentBg)',color:'var(--accent)',border:'1px solid var(--accentBorder)',padding:'8px 16px',borderRadius:8,fontSize:13,fontWeight:500} : {background:'var(--chipBg)',color:'var(--textSub)',border:'1px solid var(--border)',padding:'8px 16px',borderRadius:8,fontSize:13,fontWeight:500}}>{p.nome}</button>
+          <button className="btn" key={p.id} onClick={()=>setFilterProject(p.id)} style={filterProject===p.id ? {background:'var(--accentBg)',color:'var(--accent)',border:'1px solid var(--accentBorder)'} : {background:'var(--chipBg)',color:'var(--textSub)',border:'1px solid var(--border)'}}>{p.nome}</button>
         ))}
       </div>
 

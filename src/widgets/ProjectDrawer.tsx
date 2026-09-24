@@ -36,7 +36,7 @@ export default function ProjectDrawer({id,onClose}:{id:string,onClose:()=>void})
     <div className="drawer-overlay" onClick={onClose}>
       <div className={`drawer-panel open`} onClick={e=>e.stopPropagation()}>
         <div className="drawer-header">
-          <button onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--chipBg)',border:'1px solid var(--border)'}}>×</button>
+          <button className="btn" onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--chipBg)',border:'1px solid var(--border)'}}>×</button>
         </div>
         <div className="drawer-content">
           <h3 style={{fontSize:16,fontWeight:600}}>{p.nome}</h3>

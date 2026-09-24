@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useRef } from 'react'
+
+// Resolve URL for the project base document so the bundler serves it correctly
+const docBaseUrl = new URL('../../DocumentacaoBase-Projetos.docx', import.meta.url).href
 import { employees } from '../data/mock'
 
 function range(n: number) { return Array.from({ length: n }).map((_, i) => i) }
@@ -9,6 +12,8 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
   const [qty, setQty] = useState(1)
   const [seniorities, setSeniorities] = useState<string[]>([])
   const [fileName, setFileName] = useState<string | undefined>(undefined)
+  const [fileError, setFileError] = useState<string | undefined>(undefined)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [dragging, setDragging] = useState(false)
   const [assigned, setAssigned] = useState<Record<number, string | undefined>>({})
   const [editing, setEditing] = useState(false)
@@ -46,16 +51,16 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                 <div style={{ fontSize: 16, fontWeight: 600 }}>Novo projeto</div>
                 <div style={{ fontSize: 12, fontFamily: 'DM Mono', color: 'var(--textMuted)' }}>Defina a composição da equipe e envie o documento de descrição para análise</div>
               </div>
-              <div>
-                <button onClick={onClose} style={{ background: 'var(--chipBg)', border: '1px solid var(--border)', padding: '8px', borderRadius: 8, fontSize: 14, fontWeight: 500 }}>Voltar</button>
-              </div>
+               <div>
+                <button className="btn" onClick={onClose} style={{ background: 'var(--chipBg)', border: '1px solid var(--border)', padding: '8px', borderRadius: 8, fontSize: 14, fontWeight: 500 }}>Voltar</button>
+               </div>
             </div>
           )}
 
           {stage === 2 && (
             <div className="form-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <button onClick={() => { setStage(1); setAssigned({}); setEditing(false); setExpandedSlot(null) }} style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--chipBg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--textSub)' }} aria-label="Voltar">
+                <button className="btn" onClick={() => { setStage(1); setAssigned({}); setEditing(false); setExpandedSlot(null) }} style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--chipBg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--textSub)' }} aria-label="Voltar">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -64,14 +69,14 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <button onClick={() => setEditing(e => !e)} className="surface" style={{display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }} aria-label="Editar equipe">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                 <button onClick={() => setEditing(e => !e)} className="btn" style={{display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }} aria-label="Editar equipe">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor" />
                   </svg>
                   <span>{editing ? 'Concluir edição' : 'Editar equipe'}</span>
                 </button>
-                <button onClick={() => { setStage(3); }} className="btn-accent" style={{ padding: '8px 14px', borderRadius: 8, fontWeight: 600 }}>Confirmar equipe</button>
+                 <button onClick={() => { setStage(3); }} className="btn btn-accent" style={{ padding: '8px 14px', borderRadius: 8, fontWeight: 600 }}>Confirmar equipe</button>
               </div>
             </div>
           )}
@@ -140,30 +145,59 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                 <div>
                   <div className="section-label">DOCUMENTO DO PROJETO</div>
                   <div className="divider" />
-                  <div style={{ marginTop: 12 }}>
-                    <div className="field-label">Descrição padrão do projeto (PDF)</div>
-                    <div className={`dropzone ${dragging ? 'dragging' : ''} ${fileName ? 'filled' : ''}`} onClick={() => setFileName('projeto-exemplo.pdf')} onDragEnter={(e) => { e.preventDefault(); setDragging(true) }} onDragLeave={(e) => { e.preventDefault(); setDragging(false) }} onDrop={(e) => { e.preventDefault(); setDragging(false); setFileName('projeto-exemplo.pdf') }}>
+                     <div style={{ marginTop: 12 }}>
+                      <div className="field-label">Descrição padrão do projeto (PDF)</div>
+                    <div className={`dropzone ${dragging ? 'dragging' : ''} ${fileName ? 'filled' : ''}`} onClick={() => fileInputRef.current?.click()} onDragEnter={(e) => { e.preventDefault(); setDragging(true) }} onDragLeave={(e) => { e.preventDefault(); setDragging(false) }} onDrop={(e) => {
+                          e.preventDefault();
+                          setDragging(false);
+                          setFileError(undefined);
+                          const files = e.dataTransfer?.files;
+                          if (files && files.length > 0) {
+                            const f = files[0];
+                            const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+                            if (!isPdf) {
+                              setFileError('Apenas arquivos PDF são aceitos.');
+                              return;
+                            }
+                            setFileName(f.name);
+                          }
+                        }}>
+                      <input ref={fileInputRef} type="file" accept="application/pdf" className="hidden" style={{ display: 'none' }} onChange={(e) => {
+                        setFileError(undefined);
+                        const f = e.target.files && e.target.files[0];
+                        if (!f) return;
+                        const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+                        if (!isPdf) {
+                          setFileError('Apenas arquivos PDF são aceitos.');
+                          // clear the input
+                          e.currentTarget.value = '';
+                          return;
+                        }
+                        setFileName(f.name);
+                      }} />
                       {!fileName && (
                         <>
                           <div className="dz-icon">📄</div>
                           <div className="dz-title">Arraste o PDF aqui</div>
                           <div className="dz-sub">ou clique para selecionar · apenas arquivos .pdf</div>
+                          {/* download link moved to a button beside the field label */}
+                          {fileError && <div style={{ marginTop: 8, color: '#AD1B02', fontSize: 13 }}>{fileError}</div>}
                         </>
                       )}
-                      {fileName && (
-                        <>
-                          <div className="dz-icon" style={{ background: 'rgba(208,74,2,0.12)', color: 'var(--accent)' }}>📄</div>
-                          <div className="dz-title">{fileName}</div>
-                          <div className="dz-sub">123 KB · clique para substituir</div>
-                          <button className="dz-remove" onClick={(e) => { e.stopPropagation(); setFileName(undefined) }}>×</button>
-                        </>
-                      )}
+                        {fileName && (
+                          <>
+                            <div className="dz-icon" style={{ background: 'rgba(208,74,2,0.12)', color: 'var(--accent)' }}>📄</div>
+                            <div className="dz-title">{fileName}</div>
+                            <div className="dz-sub">clique para substituir</div>
+                            <button className="dz-remove" onClick={(e) => { e.stopPropagation(); setFileName(undefined) }}>×</button>
+                          </>
+                        )}
                     </div>
                   </div>
                 </div>
 
                 <div className="form-footer">
-                  <button className="" onClick={() => {
+                  <button className="btn" onClick={() => {
                     // Clear all form fields to initial empty/default state
                     setBudget('')
                     setQty(1)
@@ -174,7 +208,13 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                     setEditing(false)
                     setExpandedSlot(null)
                   }} style={{ background: 'transparent', border: 0, color: 'var(--textMuted)', fontSize: 14 }}>Limpar campos</button>
-                  <button className="btn-accent" onClick={() => setStage(2)} style={{ padding: '10px 18px', borderRadius: 8, fontWeight: 600 }}>Analisar e montar equipe →</button>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <a href={docBaseUrl} download className="btn btn-download" aria-label="Download Documento base">
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3v12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M8 11l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="19" width="18" height="2" rx="1" fill="currentColor"/></svg>
+                      <span>Download Documento base</span>
+                    </a>
+                    <button className="btn btn-accent" onClick={() => setStage(2)}>Analisar e montar equipe →</button>
+                  </div>
                 </div>
               </div>
             )}
@@ -198,7 +238,7 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                     </div>
                     <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: 12, marginTop: 12 }} />
 
-                    <div style={{ marginTop: 12 }} className="doc-section">
+                <div style={{ marginTop: 12 }} className="doc-section">
                       {[
                         { n: '01', t: 'Resumo Executivo', b: 'Resumo curto sobre o objetivo e escopo do projeto.' },
                         { n: '02', t: 'Tecnologias Identificadas', b: 'React, Node.js, AWS e Postgree.' },
@@ -284,11 +324,11 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                       })}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
-                      <button className="surface" onClick={() => { setStage(1); setAssigned({}); setEditing(false); setExpandedSlot(null) }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }}>← Voltar</button>
-                      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-                        {/* duplicate of header edit button for convenience */}
-                        <button className="surface" onClick={() => setEditing(e => !e)} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }}>{editing ? 'Concluir edição' : 'Editar equipe'}</button>
-                        <button className="btn-accent" onClick={() => setStage(3)} style={{ padding: '6px 10px', borderRadius: 8, fontWeight: 500 }}>Confirmar equipe</button>
+                       <button className="btn" onClick={() => { setStage(1); setAssigned({}); setEditing(false); setExpandedSlot(null) }} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }}>← Voltar</button>
+                       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+                         {/* duplicate of header edit button for convenience */}
+                         <button className="btn" onClick={() => setEditing(e => !e)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }}>{editing ? 'Concluir edição' : 'Editar equipe'}</button>
+                         <button className="btn btn-accent" onClick={() => setStage(3)} style={{ padding: '6px 10px', borderRadius: 8, fontWeight: 500 }}>Confirmar equipe</button>
                       </div>
                     </div>
                   </div>
@@ -304,7 +344,7 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                 <div style={{ fontSize: 18, fontWeight: 600 }}>Equipe confirmada!</div>
                 <div style={{ fontSize: 14, color: 'var(--textMuted)' }}> {qty} {qty === 1 ? 'vaga alocada' : 'vagas alocadas'} ao novo projeto.</div>
                 <div style={{ marginTop: 12 }}>
-                  <button onClick={() => { if (onConfirm) onConfirm(); else onClose() }} style={{ marginTop: 12, padding: '10px 18px', borderRadius: 8, background: 'var(--chipBg)', border: '1px solid var(--border)', color: 'var(--textSub)' }}>Voltar ao portfólio</button>
+                  <button className="btn" onClick={() => { if (onConfirm) onConfirm(); else onClose() }} style={{ marginTop: 12, padding: '10px 18px', borderRadius: 8, background: 'var(--chipBg)', border: '1px solid var(--border)', color: 'var(--textSub)' }}>Voltar ao portfólio</button>
                 </div>
               </div>
             )}

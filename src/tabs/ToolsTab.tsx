@@ -66,7 +66,7 @@ export default function ToolsTab(){
         </div>
 
         <div ref={ddRef} className="relative">
-          <button onClick={()=>setOpen(v=>!v)} className="flex items-center gap-2 px-3 py-2 rounded border" style={{background:'var(--surface)'}}>
+          <button onClick={()=>setOpen(v=>!v)} className="btn" style={{background:'var(--surface)'}}>
             <span style={{fontSize:16}}>{CATEGORIES.find(c=>c.key===cat)?.emoji}</span>
             <span style={{fontSize:13,fontWeight:500}}>{cat}</span>
             <svg style={{transform: open? 'rotate(180deg)':''}} width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
