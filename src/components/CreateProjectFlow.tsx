@@ -323,6 +323,7 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                         )
                       })}
                     </div>
+<<<<<<< HEAD
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
                        <button className="btn" onClick={() => { setStage(1); setAssigned({}); setEditing(false); setExpandedSlot(null) }} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, fontSize: 14, fontWeight: 500, background: editing ? 'rgba(208,74,2,0.10)' : 'var(--chipBg)', color: editing ? 'var(--accent)' : 'var(--textSub)', border: editing ? '1px solid rgba(208,74,2,0.30)' : '1px solid var(--border)' }}>← Voltar</button>
                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
@@ -331,6 +332,8 @@ export default function CreateProjectFlow({ onClose, onConfirm }: { onClose: () 
                          <button className="btn btn-accent" onClick={() => setStage(3)} style={{ padding: '6px 10px', borderRadius: 8, fontWeight: 500 }}>Confirmar equipe</button>
                       </div>
                     </div>
+=======
+>>>>>>> fe04f64fab565d68c95602ebd69fb67ce953fa3d
                   </div>
                 </div>
               </div>
