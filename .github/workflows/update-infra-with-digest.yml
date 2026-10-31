@@ -1,0 +1,74 @@
+name: Update Infra Frontend Image
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Frontend"]
+    types:
+      - completed
+
+jobs:
+  update-infra:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Download frontend image digest artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-image-digest
+          path: ./digest_artifact
+
+      - name: Read IMAGE_DIGEST
+        id: read_digest
+        run: |
+          DIGEST_FILE=./digest_artifact/image_digest.txt
+          if [ ! -f "$DIGEST_FILE" ]; then
+            echo "digest file not found" >&2
+            exit 1
+          fi
+          IMAGE_DIGEST_LINE=$(cat $DIGEST_FILE | tr -d '\r')
+          echo "Found: $IMAGE_DIGEST_LINE"
+          # export to output
+          echo "::set-output name=image_digest::$IMAGE_DIGEST_LINE"
+
+      - name: Update infra file with new frontend_image
+        run: |
+          python - <<'PY'
+import json,os,sys
+digest_line = os.environ.get('IMAGE_DIGEST')
+if not digest_line:
+    print("IMAGE_DIGEST not set", file=sys.stderr); sys.exit(1)
+# digest_line has format IMAGE_DIGEST=docker.io/..@sha256:...
+if '=' in digest_line:
+    _, image_ref = digest_line.split('=',1)
+else:
+    image_ref = digest_line
+path = "noctua-infraestructure/noctua-infraestructure/files/application.example.json"
+with open(path, 'r', encoding='utf-8') as f:
+    data = json.load(f)
+data['frontend_image'] = image_ref
+with open(path, 'w', encoding='utf-8') as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+print("Updated", path, "to", image_ref)
+PY
+        env:
+          IMAGE_DIGEST: ${{ steps.read_digest.outputs.image_digest }}
+
+      - name: Create Pull Request with the change
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "ci: update frontend image to ${{ steps.read_digest.outputs.image_digest }}"
+          branch: "ci/update-frontend-image-${{ github.run_id }}"
+          title: "Update frontend image (automated)"
+          body: |
+            Este PR atualiza a referência da imagem do frontend para o digest gerado pela CI:
+            
+            ${{ steps.read_digest.outputs.image_digest }}
