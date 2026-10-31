@@ -29,12 +29,13 @@ jobs:
         id: build
         uses: docker/build-push-action@v4
         with:
-          context: ./noctua-frontend
-          file: ./noctua-frontend/Dockerfile
+          # In this repo the frontend code and Dockerfile are at the repository root
+          context: .
+          file: ./Dockerfile
           push: true
           tags: |
-            elersonalves/noctua-frontend:latest
-            elersonalves/noctua-frontend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/noctua-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/noctua-frontend:${{ github.sha }}
           # platforms: linux/amd64   # descomente se precisar forçar arquit. (não necessário normalmente)
 
       - name: Save digest to file
