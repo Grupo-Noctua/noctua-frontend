@@ -1,8 +1,52 @@
-import React from 'react'
-import { projects, employees } from '../data/mock'
+import React, { useEffect, useState } from 'react'
+import { employees } from '../data/mock'
+import dashboard, { ProjetoDTO } from '../api'
 
 export default function ProjectDrawer({id,onClose}:{id:string,onClose:()=>void}){
-  const p = projects.find(x=>x.id===id)!
+  // Try to find a mock project first for compatibility (dev). If not
+  // found, fetch from backend projects and normalize shape so the
+  // rest of the component can remain mostly unchanged.
+  const mock = (globalThis as any).__NOCTUA_MOCK_PROJECTS as any[] | undefined
+  // fallback to static import lookup (older behaviour)
+  let localMock: any[] | undefined
+  try { localMock = require('../data/mock').projects } catch { localMock = undefined }
+  const [apiProject, setApiProject] = useState<ProjetoDTO | null>(null)
+  const pMock = (localMock || mock || []).find(x=>String(x.id)===String(id))
+
+  useEffect(()=>{
+    if(pMock) return
+    let mounted = true
+    dashboard.projetos().then(list=>{
+      if(!mounted) return
+      const found = list.find(pr => String(pr.idProcessamento) === String(id)) || null
+      setApiProject(found)
+    }).catch(()=>{
+      if(mounted) setApiProject(null)
+    })
+    return ()=>{ mounted = false }
+  },[id, pMock])
+
+  const p = pMock ? pMock : (
+    apiProject ? {
+      nome: apiProject.nomeProjeto || '—',
+      cliente: apiProject.cliente || '—',
+      fase: '',
+      equipe: (apiProject.profissionaisRecomendados || []).map(r=> r.idProfissional || r.nome || ''),
+      progresso: 0,
+      orcamento: apiProject.orcamento ? Number(apiProject.orcamento) : undefined,
+    } : null
+  )
+
+  if(!p) return (
+    <div className="drawer-overlay" onClick={onClose}>
+      <div className={`drawer-panel open`} onClick={e=>e.stopPropagation()}>
+        <div className="drawer-header">
+          <button className="btn" onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--chipBg)',border:'1px solid var(--border)'}}>×</button>
+        </div>
+        <div className="drawer-content">Carregando...</div>
+      </div>
+    </div>
+  )
 
   function compatibilityScore(emp: typeof employees[0]){
     let score = emp.disponibilidade || 0

@@ -1,5 +1,5 @@
-import React from 'react'
-import { employees, projects, tools } from '../data/mock'
+import React, { useEffect, useState } from 'react'
+import dashboard, { TecnologiaDTO, AreaDTO, SenioridadeDTO } from '../api'
 
 function ChartCard({title,children}:{title:string,children:React.ReactNode}){
   return (
@@ -12,27 +12,12 @@ function ChartCard({title,children}:{title:string,children:React.ReactNode}){
   )
 }
 
-function ColumnChartEmployeesTech(){
-  // data from graficos.md
-  const data = [
-    ['Node.js',11],
-    ['Spark',8],
-    ['React',10],
-    ['Postgres',7],
-    ['Docker',13],
-    ['Figma',6],
-    ['AWS',9],
-    ['PowerBI',5],
-    ['Python',12]
-  ] as [string,number][]
-
-  const max = Math.max(...data.map(d=>d[1]))
-  // use a single orange color for all bars
+function ColumnChartEmployeesTech({data}:{data:[string,number][]}){
+  const max = data.length ? Math.max(...data.map(d=>d[1])) : 1
   const barColor = 'var(--accent)'
-
   return (
     <div style={{height:176,paddingTop:24,display:'flex',alignItems:'end',gap:8}}>
-      {data.map(([label,count],i)=>{
+      {data.map(([label,count])=>{
         const h = Math.max(6, Math.round((count / max) * 110))
         return (
           <div key={label} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
@@ -63,51 +48,26 @@ function HorizontalBar({label, value, max, color}:{label:string,value:number,max
   )
 }
 
-function HorizontalBarsByDept(){
-  const deptMap = new Map<string,number>()
-  for(const e of employees){
-    deptMap.set(e.departamento, (deptMap.get(e.departamento)||0) + 1)
-  }
-  const items = Array.from(deptMap.entries()).sort((a,b)=>b[1]-a[1])
-  const max = items.length? items[0][1]:1
+function HorizontalBarsByDept({items}:{items: [string,number][]}){
+  const sorted = items.slice().sort((a,b)=>b[1]-a[1])
+  const max = sorted.length? sorted[0][1]:1
   return (
     <div style={{display:'flex',flexDirection:'column',gap:10}}>
-      {items.map(([label,value])=> (
+      {sorted.map(([label,value])=> (
         <HorizontalBar key={label} label={label} value={value} max={max} color={'var(--accent)'} />
       ))}
     </div>
   )
 }
 
-function HorizontalBarsBySeniority(){
-  // hierarchy and color opacities as per graficos.md
+function HorizontalBarsBySeniority({items}:{items:[string,number][]}){
   const hierarchy = ['Estagiário','Júnior','Pleno','Sênior','Especialista','Tech Lead']
-  // use solid hex shades instead of translucent rgba so colors don't get darker in dark mode
-  // use the same orange for all seniority bars
-  const opacityMap: Record<string,string> = {
-    'Estagiário':'var(--accent)',
-    'Júnior':'var(--accent)',
-    'Pleno':'var(--accent)',
-    'Sênior':'var(--accent)',
-    'Especialista':'var(--accent)',
-    'Tech Lead':'var(--accent)'
-  }
-
-  // map mock seniorities to these labels
-  const mapName: Record<string,string> = { 'Junior':'Júnior', 'Pleno':'Pleno', 'Senior':'Sênior' }
-  const counts = new Map<string,number>()
-  for(const e of employees){
-    const s = e.senioridade? (mapName[e.senioridade] || e.senioridade) : 'Estagiário'
-    counts.set(s, (counts.get(s)||0) + 1)
-  }
-  // include all seniority levels from the form (show zero if none)
-  const items = hierarchy.map(h=> [h, counts.get(h)||0] as [string,number])
-  const max = items.length? Math.max(...items.map(i=>i[1])):1
-
+  const mapItems = hierarchy.map(h=> [h, items.find(i=>i[0]===h)?.[1] || 0] as [string,number])
+  const max = mapItems.length? Math.max(...mapItems.map(i=>i[1])):1
   return (
     <div style={{display:'flex',flexDirection:'column',gap:10}}>
-      {items.map(([label,value])=> (
-        <HorizontalBar key={label} label={label} value={value} max={max} color={opacityMap[label] || 'rgba(208,74,2,0.6)'} />
+      {mapItems.map(([label,value])=> (
+        <HorizontalBar key={label} label={label} value={value} max={max} color={'var(--accent)'} />
       ))}
     </div>
   )
@@ -128,23 +88,17 @@ function describeDonutSlice(cx:number,cy:number,outerR:number,innerR:number,star
   return `M ${startOuterX} ${startOuterY} A ${outerR} ${outerR} 0 ${largeArc} 1 ${endOuterX} ${endOuterY} L ${startInnerX} ${startInnerY} A ${innerR} ${innerR} 0 ${largeArc} 0 ${endInnerX} ${endInnerY} Z`
 }
 
-function DonutChart(){
-  const data = [
-    ['Node.js',11],['Spark',11],['React',9],['Postgres',9],['Docker',9],['Figma',9],['AWS',7],['PowerBI',7],['Python',7]
-  ] as [string,number][]
+function DonutChart({data}:{data:[string,number][]}){
   const total = data.reduce((s,[,v])=>s+v,0)
-  const colors = ['#D04A02','rgba(208,74,2,0.78)','rgba(208,74,2,0.60)','rgba(208,74,2,0.44)','#6B7280','#9CA3AF','rgba(208,74,2,0.30)','#4B5563','#D1D5DB']
-
+  const colors = ['#D04A02','#F97316','#FB923C','#FDBA74','#6B7280','#9CA3AF','#4B5563','#D1D5DB','#FEEBC8']
   let angle = -Math.PI/2 // start at top
   const cx = 110, cy = 110, outerR = 90, innerR = 48
-
   return (
-    // center the whole donut+legend block inside the card
     <div style={{display:'flex',gap:40,alignItems:'center',justifyContent:'center',width:'100%',minHeight:260}}>
       <svg width={220} height={220} viewBox={`0 0 220 220`}>
         <g>
           {data.map(([label,value],i)=>{
-            const sliceAngle = (value/total) * Math.PI * 2
+            const sliceAngle = total ? (value/total) * Math.PI * 2 : 0
             const path = describeDonutSlice(cx,cy,outerR,innerR,angle, angle + sliceAngle)
             const key = `s${i}`
             angle += sliceAngle
@@ -157,7 +111,7 @@ function DonutChart(){
 
       <div style={{display:'flex',flexDirection:'column',gap:10,width:260}}>
         {data.map(([label,value],i)=>{
-          const pct = Math.round((value/total)*100)
+          const pct = total ? Math.round((value/total)*100) : 0
           return (
             <div key={label} style={{display:'flex',alignItems:'center',gap:12}}>
               <div style={{width:12,height:12,background:colors[i%colors.length],borderRadius:2,flex:'0 0 12px'}} />
@@ -173,23 +127,42 @@ function DonutChart(){
 }
 
 export default function MetricsTab(){
+  const [tech, setTech] = useState<TecnologiaDTO[]>([])
+  const [area, setArea] = useState<AreaDTO[]>([])
+  const [seniority, setSeniority] = useState<SenioridadeDTO[]>([])
+  const [projTech, setProjTech] = useState<TecnologiaDTO[]>([])
+
+  useEffect(()=>{
+    let mounted = true
+    dashboard.funcionariosPorTecnologia().then(r=>{ if(mounted) setTech(r) }).catch(()=>{})
+    dashboard.funcionariosPorArea().then(r=>{ if(mounted) setArea(r) }).catch(()=>{})
+    dashboard.funcionariosPorSenioridade().then(r=>{ if(mounted) setSeniority(r) }).catch(()=>{})
+    dashboard.projetosPorTecnologia().then(r=>{ if(mounted) setProjTech(r) }).catch(()=>{})
+    return ()=>{ mounted = false }
+  },[])
+
+  const techData = tech.map(t=> [t.tecnologia || '—', Number(t.quantidade)] as [string,number])
+  const areaData = area.map(a=> [a.area || '—', Number(a.quantidade)] as [string,number])
+  const seniorData = seniority.map(s=> [s.senioridade || '—', Number(s.quantidade)] as [string,number])
+  const projTechData = projTech.map(t=> [t.tecnologia || '—', Number(t.quantidade)] as [string,number])
+
   return (
     <div style={{display:'flex',flexDirection:'column',gap:24}}>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
         <ChartCard title="Funcionários x Tecnologia">
-          <ColumnChartEmployeesTech />
+          <ColumnChartEmployeesTech data={techData.length ? techData : [['—',0]]} />
         </ChartCard>
 
         <ChartCard title="Número de funcionários por Área">
-          <HorizontalBarsByDept />
+          <HorizontalBarsByDept items={areaData} />
         </ChartCard>
 
         <ChartCard title="Número de funcionários por Senioridade">
-          <HorizontalBarsBySeniority />
+          <HorizontalBarsBySeniority items={seniorData} />
         </ChartCard>
 
         <ChartCard title="Projetos x Tecnologia">
-          <DonutChart />
+          <DonutChart data={projTechData.length ? projTechData : [['—',0]]} />
         </ChartCard>
       </div>
     </div>
