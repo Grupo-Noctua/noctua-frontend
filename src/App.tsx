@@ -3,7 +3,7 @@ import Header from './components/Header'
 import KPIs from './components/KPIs'
 import ProjectsTab from './tabs/ProjectsTab'
 import MetricsTab from './tabs/MetricsTab'
-import CreateProjectFlow from './components/CreateProjectFlow'
+import CreateProjectDialog from './components/CreateProjectDialog'
 
 export default function App() {
   const [theme, setTheme] = useState<'light'|'dark'>(() => {
@@ -25,7 +25,7 @@ export default function App() {
         onToggleTheme={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
         theme={theme}
         onCreate={() => setCreating(true)}
-        userName="Rafael Drummond · Diretor de Projetos"
+        userName="Dashboard Noctua"
       />
 
       <div className="mt-6">
@@ -44,7 +44,7 @@ export default function App() {
         {activeTab === 'projetos' && <ProjectsTab />}
       </main>
 
-      {creating && <CreateProjectFlow onClose={() => setCreating(false)} onConfirm={() => { setCreating(false); setActiveTab('projetos') }} />}
+      {creating && <CreateProjectDialog onClose={() => setCreating(false)} />}
     </div>
   )
 }

@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import dashboard, { TecnologiaDTO, AreaDTO, SenioridadeDTO } from '../api'
+import React from 'react'
+import dashboard from '../api'
+import useApiQuery from '../useApiQuery'
+import ApiContent from '../components/ApiContent'
 
 function ChartCard({title,children}:{title:string,children:React.ReactNode}){
   return (
@@ -13,12 +15,12 @@ function ChartCard({title,children}:{title:string,children:React.ReactNode}){
 }
 
 function ColumnChartEmployeesTech({data}:{data:[string,number][]}){
-  const max = data.length ? Math.max(...data.map(d=>d[1])) : 1
+  const max = Math.max(1, ...data.map(d=>d[1]))
   const barColor = 'var(--accent)'
   return (
     <div style={{height:176,paddingTop:24,display:'flex',alignItems:'end',gap:8}}>
       {data.map(([label,count])=>{
-        const h = Math.max(6, Math.round((count / max) * 110))
+        const h = count > 0 ? Math.max(6, Math.round((count / max) * 110)) : 0
         return (
           <div key={label} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
             <div style={{fontSize:11,fontFamily:'DM Mono',fontWeight:700,textAlign:'center'}}>{count}</div>
@@ -61,7 +63,7 @@ function HorizontalBarsByDept({items}:{items: [string,number][]}){
 }
 
 function HorizontalBarsBySeniority({items}:{items:[string,number][]}){
-  const hierarchy = ['Estagiário','Júnior','Pleno','Sênior','Especialista','Tech Lead']
+  const hierarchy = ['Júnior','Pleno','Sênior']
   const mapItems = hierarchy.map(h=> [h, items.find(i=>i[0]===h)?.[1] || 0] as [string,number])
   const max = mapItems.length? Math.max(...mapItems.map(i=>i[1])):1
   return (
@@ -127,42 +129,33 @@ function DonutChart({data}:{data:[string,number][]}){
 }
 
 export default function MetricsTab(){
-  const [tech, setTech] = useState<TecnologiaDTO[]>([])
-  const [area, setArea] = useState<AreaDTO[]>([])
-  const [seniority, setSeniority] = useState<SenioridadeDTO[]>([])
-  const [projTech, setProjTech] = useState<TecnologiaDTO[]>([])
+  const tech = useApiQuery(dashboard.funcionariosPorTecnologia)
+  const area = useApiQuery(dashboard.funcionariosPorArea)
+  const seniority = useApiQuery(dashboard.funcionariosPorSenioridade)
+  const projTech = useApiQuery(dashboard.projetosPorTecnologia)
 
-  useEffect(()=>{
-    let mounted = true
-    dashboard.funcionariosPorTecnologia().then(r=>{ if(mounted) setTech(r) }).catch(()=>{})
-    dashboard.funcionariosPorArea().then(r=>{ if(mounted) setArea(r) }).catch(()=>{})
-    dashboard.funcionariosPorSenioridade().then(r=>{ if(mounted) setSeniority(r) }).catch(()=>{})
-    dashboard.projetosPorTecnologia().then(r=>{ if(mounted) setProjTech(r) }).catch(()=>{})
-    return ()=>{ mounted = false }
-  },[])
-
-  const techData = tech.map(t=> [t.tecnologia || '—', Number(t.quantidade)] as [string,number])
-  const areaData = area.map(a=> [a.area || '—', Number(a.quantidade)] as [string,number])
-  const seniorData = seniority.map(s=> [s.senioridade || '—', Number(s.quantidade)] as [string,number])
-  const projTechData = projTech.map(t=> [t.tecnologia || '—', Number(t.quantidade)] as [string,number])
+  const techData = (tech.data || []).map(t=> [t.tecnologia || '—', Number(t.quantidade)] as [string,number])
+  const areaData = (area.data || []).map(a=> [a.area || '—', Number(a.quantidade)] as [string,number])
+  const seniorData = (seniority.data || []).map(s=> [s.senioridade || '—', Number(s.quantidade)] as [string,number])
+  const projTechData = (projTech.data || []).map(t=> [t.tecnologia || '—', Number(t.quantidade)] as [string,number])
 
   return (
     <div style={{display:'flex',flexDirection:'column',gap:24}}>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16}}>
         <ChartCard title="Funcionários x Tecnologia">
-          <ColumnChartEmployeesTech data={techData.length ? techData : [['—',0]]} />
+          <ApiContent query={tech} empty={techData.length === 0}><ColumnChartEmployeesTech data={techData} /></ApiContent>
         </ChartCard>
 
         <ChartCard title="Número de funcionários por Área">
-          <HorizontalBarsByDept items={areaData} />
+          <ApiContent query={area} empty={areaData.length === 0}><HorizontalBarsByDept items={areaData} /></ApiContent>
         </ChartCard>
 
         <ChartCard title="Número de funcionários por Senioridade">
-          <HorizontalBarsBySeniority items={seniorData} />
+          <ApiContent query={seniority} empty={seniorData.length === 0}><HorizontalBarsBySeniority items={seniorData} /></ApiContent>
         </ChartCard>
 
         <ChartCard title="Projetos x Tecnologia">
-          <DonutChart data={projTechData.length ? projTechData : [['—',0]]} />
+          <ApiContent query={projTech} empty={projTechData.length === 0}><DonutChart data={projTechData} /></ApiContent>
         </ChartCard>
       </div>
     </div>

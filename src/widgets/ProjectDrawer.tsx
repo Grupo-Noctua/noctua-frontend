@@ -1,119 +1,43 @@
-import React, { useEffect, useState } from 'react'
-import { employees } from '../data/mock'
-import dashboard, { ProjetoDTO } from '../api'
+import React from 'react'
+import { ProjetoDTO } from '../api'
+import { formatCurrency, formatDate } from '../format'
 
-export default function ProjectDrawer({id,onClose}:{id:string,onClose:()=>void}){
-  // Try to find a mock project first for compatibility (dev). If not
-  // found, fetch from backend projects and normalize shape so the
-  // rest of the component can remain mostly unchanged.
-  const mock = (globalThis as any).__NOCTUA_MOCK_PROJECTS as any[] | undefined
-  // fallback to static import lookup (older behaviour)
-  let localMock: any[] | undefined
-  try { localMock = require('../data/mock').projects } catch { localMock = undefined }
-  const [apiProject, setApiProject] = useState<ProjetoDTO | null>(null)
-  const pMock = (localMock || mock || []).find(x=>String(x.id)===String(id))
-
-  useEffect(()=>{
-    if(pMock) return
-    let mounted = true
-    dashboard.projetos().then(list=>{
-      if(!mounted) return
-      const found = list.find(pr => String(pr.idProcessamento) === String(id)) || null
-      setApiProject(found)
-    }).catch(()=>{
-      if(mounted) setApiProject(null)
-    })
-    return ()=>{ mounted = false }
-  },[id, pMock])
-
-  const p = pMock ? pMock : (
-    apiProject ? {
-      nome: apiProject.nomeProjeto || '—',
-      cliente: apiProject.cliente || '—',
-      fase: '',
-      equipe: (apiProject.profissionaisRecomendados || []).map(r=> r.idProfissional || r.nome || ''),
-      progresso: 0,
-      orcamento: apiProject.orcamento ? Number(apiProject.orcamento) : undefined,
-    } : null
-  )
-
-  if(!p) return (
-    <div className="drawer-overlay" onClick={onClose}>
-      <div className={`drawer-panel open`} onClick={e=>e.stopPropagation()}>
-        <div className="drawer-header">
-          <button className="btn" onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--chipBg)',border:'1px solid var(--border)'}}>×</button>
-        </div>
-        <div className="drawer-content">Carregando...</div>
-      </div>
-    </div>
-  )
-
-  function compatibilityScore(emp: typeof employees[0]){
-    let score = emp.disponibilidade || 0
-    const ctx = `${p.nome} ${p.fase} ${p.cliente}`.toLowerCase()
-    // data/analytics projects
-    if(/data|bi|lake|spark|databricks|etl|dashboard/i.test(ctx)){
-      if(emp.departamento==='Dados') score += 30
-      if(/engenheiro|dados|data/i.test(emp.cargo)) score += 20
-    }
-    // web/app projects
-    if(/app|portal|mobile|frontend|backend|erp|portal|cliente/i.test(ctx)){
-      if(emp.departamento==='TI') score += 30
-      if(/desenvolvedor|analista|dev/i.test(emp.cargo)) score += 20
-    }
-    // infra/security
-    if(/seguran|security|cloud|infra|aws|kubernetes|devops/i.test(ctx)){
-      if(emp.departamento==='Infra') score += 30
-      if(/infra|devops|engenheiro/i.test(emp.cargo)) score += 15
-    }
-    return Math.min(100, Math.round(score))
-  }
-
-  // choose number of slots equal to current equipe length or fallback to 3
-  const slots = Math.max(1, p.equipe?.length || 3)
-
-  const candidates = employees.map(e=>({...e, score: compatibilityScore(e)})).filter(e=>!!e.id && !p.equipe.includes(e.id))
-  candidates.sort((a,b)=>b.score - a.score)
-  const suggested = candidates.slice(0, slots)
+export default function ProjectDrawer({ project, onClose }: { project: ProjetoDTO, onClose: () => void }) {
+  const candidates = project.profissionaisRecomendados || []
 
   return (
     <div className="drawer-overlay" onClick={onClose}>
-      <div className={`drawer-panel open`} onClick={e=>e.stopPropagation()}>
+      <div className="drawer-panel open" role="dialog" aria-modal="true" aria-labelledby="project-title" onClick={e => e.stopPropagation()}>
         <div className="drawer-header">
-          <button className="btn" onClick={onClose} style={{width:32,height:32,borderRadius:8,background:'var(--chipBg)',border:'1px solid var(--border)'}}>×</button>
+          <button className="btn" aria-label="Fechar detalhes" onClick={onClose}>×</button>
         </div>
         <div className="drawer-content">
-          <h3 style={{fontSize:16,fontWeight:600}}>{p.nome}</h3>
-          <div style={{fontSize:12,fontFamily:'DM Mono',color:'var(--textMuted)'}}>{p.cliente} · {p.fase}</div>
-
-          <div style={{marginTop:8}}>
-            <div><strong>Orçamento:</strong> R$ {p.orcamento.toLocaleString('pt-BR')}</div>
-            <div><strong>Prazo:</strong> {p.deadline}</div>
+          <h3 id="project-title" style={{ fontSize: 16, fontWeight: 600 }}>{project.nomeProjeto || 'Projeto sem nome'}</h3>
+          <div className="text-sub">{project.cliente || 'Cliente não informado'}</div>
+          <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
+            <div><strong>Gestor responsável:</strong> {project.gestorResponsavel || 'Não informado'}</div>
+            <div><strong>Orçamento:</strong> {formatCurrency(project.orcamento)}</div>
+            <div><strong>Início previsto:</strong> {formatDate(project.dataInicioPrevista)}</div>
+            <div><strong>Duração estimada:</strong> {project.duracaoEstimada || 'Não informada'}</div>
+            <div><strong>Descrição:</strong> {project.descricao || 'Não informada'}</div>
+            <div><strong>Objetivo geral:</strong> {project.objetivoGeral || 'Não informado'}</div>
           </div>
 
-          <div>
-            <h4 className="text-sub" style={{marginTop:12,fontFamily:'DM Mono',fontSize:11,textTransform:'uppercase',color:'var(--textMuted)'}}>Equipe sugerida</h4>
-            <div style={{display:'flex',flexDirection:'column',gap:8}}>
-              {suggested.map(u=> (
-                <div key={u.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'8px',borderRadius:8,background:'var(--surfaceAlt)',border:'1px solid var(--border)'}}>
-                  <div style={{display:'flex',alignItems:'center',gap:12}}>
-                    <div style={{width:40,height:40,borderRadius:8,background:'var(--chipBg)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700}}>{u.nome.split(' ').map(p=>p[0]).slice(0,2).join('')}</div>
-                    <div>
-                      <div style={{fontSize:14,fontWeight:600}}>{u.nome}</div>
-                      <div style={{fontSize:12,color:'var(--textMuted)'}}>{u.cargo} · {u.departamento}</div>
-                    </div>
-                  </div>
-
-                  <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
-                    <div style={{fontFamily:'DM Mono',fontSize:12}}>{u.disponibilidade}% livre</div>
-                    <div style={{width:120,height:8,background:'rgba(0,0,0,0.06)',borderRadius:6,overflow:'hidden'}}>
-                      <div style={{width:`${u.score}%`,height:'100%',background:'var(--accent)'}} />
-                    </div>
-                    <div style={{fontSize:12,fontFamily:'DM Mono',color:'var(--textMuted)'}}>{u.score}% compatibilidade</div>
-                  </div>
+          <h4 style={{ marginTop: 24, fontWeight: 600 }}>Profissionais recomendados</h4>
+          <p className="text-sub" style={{ marginBottom: 12 }}>Ranking retornado pela API para este processamento.</p>
+          {candidates.length === 0 && <p className="text-sub">Nenhum profissional recomendado neste processamento.</p>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {candidates.map((candidate, index) => (
+              <div key={`${candidate.idProfissional}-${candidate.vaga}-${index}`} style={{ padding: 12, borderRadius: 8, background: 'var(--surfaceAlt)', border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{candidate.nome || candidate.idProfissional || 'Nome não informado'}</div>
+                <div className="text-sub">{candidate.vaga || 'Vaga não informada'} · {candidate.senioridade || 'Senioridade não informada'}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 8 }}>
+                  <span>Posição: {candidate.posicaoRanking ?? 'Não informada'}</span>
+                  <span>Pontuação: {candidate.scoreTotal == null ? 'Não informada' : Number(candidate.scoreTotal).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}</span>
                 </div>
-              ))}
-            </div>
+                {candidate.justificativa && <p style={{ marginTop: 8 }}>{candidate.justificativa}</p>}
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -10,6 +10,11 @@ export type AreaDTO = { area: string | null, quantidade: number }
 export type ProfissionalRecomendadoDTO = {
   idProfissional?: string | null,
   nome?: string | null,
+  senioridade?: string | null,
+  vaga?: string | null,
+  posicaoRanking?: number | null,
+  scoreTotal?: number | string | null,
+  justificativa?: string | null,
 }
 
 export type ProjetoDTO = {
@@ -17,7 +22,11 @@ export type ProjetoDTO = {
   idProjeto?: number | null,
   nomeProjeto?: string | null,
   cliente?: string | null,
+  gestorResponsavel?: string | null,
   dataInicioPrevista?: string | null,
+  duracaoEstimada?: string | null,
+  descricao?: string | null,
+  objetivoGeral?: string | null,
   orcamento?: number | string | null,
   profissionaisRecomendados?: ProfissionalRecomendadoDTO[]
 }

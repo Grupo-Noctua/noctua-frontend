@@ -1,41 +1,32 @@
-import React, { useEffect, useState } from 'react'
-import { dashboard, FerramentaDTO } from '../api'
+import React from 'react'
+import { dashboard } from '../api'
+import useApiQuery from '../useApiQuery'
+import ApiContent from './ApiContent'
 
 export default function KPIs(){
-  const [totalEmployees, setTotalEmployees] = useState<number | null>(null)
-  const [projectsAnalyzed, setProjectsAnalyzed] = useState<number | null>(null)
-  const [mostUsed, setMostUsed] = useState<string>('—')
-
-  useEffect(()=>{
-    let mounted = true
-    dashboard.totalFuncionarios().then(r=> { if(mounted) setTotalEmployees(r.total) }).catch(()=>{})
-    dashboard.totalProjetos().then(r=> { if(mounted) setProjectsAnalyzed(r.total) }).catch(()=>{})
-    dashboard.ferramentasMaisUtilizadas().then((list: FerramentaDTO[])=>{
-      if(!mounted) return
-      if(!list || list.length===0){ setMostUsed('—'); return }
-      // join names if multiple tied
-      setMostUsed(list.map(l=>l.ferramenta || '—').join(', '))
-    }).catch(()=>{})
-    return ()=>{ mounted = false }
-  },[])
+  const totalEmployees = useApiQuery(dashboard.totalFuncionarios)
+  const projectsAnalyzed = useApiQuery(dashboard.totalProjetos)
+  const tools = useApiQuery(dashboard.ferramentasMaisUtilizadas)
+  // The API orders tied tools alphabetically; show only the first one.
+  const mostUsed = tools.data?.[0]?.ferramenta || 'Não informado'
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
       <div className="card kpi-accent-1">
         <div className="kpi-label">Número de Funcionários</div>
-        <div className="kpi-value">{totalEmployees ?? '—'}</div>
+        <ApiContent query={totalEmployees}><div className="kpi-value">{totalEmployees.data?.total}</div></ApiContent>
         <div className="kpi-sub">Total de funcionários cadastrados</div>
       </div>
 
       <div className="card kpi-accent-2">
         <div className="kpi-label">Número de Projetos Analisados</div>
-        <div className="kpi-value">{projectsAnalyzed ?? '—'}</div>
+        <ApiContent query={projectsAnalyzed}><div className="kpi-value">{projectsAnalyzed.data?.total}</div></ApiContent>
         <div className="kpi-sub">Projetos usados para as métricas</div>
       </div>
 
       <div className="card kpi-accent-3">
         <div className="kpi-label">Ferramenta mais utilizada</div>
-        <div className="kpi-value">{mostUsed}</div>
+        <ApiContent query={tools} empty={tools.data?.length === 0}><div className="kpi-value">{mostUsed}</div></ApiContent>
         <div className="kpi-sub">Baseado no somatório de uso por projeto</div>
       </div>
     </div>
